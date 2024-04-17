@@ -1,35 +1,27 @@
 import * as React from 'react';
 import { View, Text, FlatList, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import Cell from './Cell';
 import { cats, dogs } from './breeds';
 
-function HomeScreen() {
+function CatsScreen() {
   const navigation = useNavigation();
   const [search, setSearch] = React.useState('');
-  const [showCats, setShowCats] = React.useState(true);
-  const dataToShow = showCats ? cats : dogs;
 
   return (
     <View style={styles.container}>
-      <View style={styles.searchContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder='Search for a Specific Breed'
-          onChangeText={setSearch}
-          value={search}
-        />
-        <TouchableOpacity
-          style={[styles.button, { backgroundColor: 'pink' }]}
-          onPress={() => setShowCats(!showCats)}
-        >
-          <Text style={styles.buttonText}>{showCats ? 'Show Dogs' : 'Show Cats'}</Text>
-        </TouchableOpacity>
-      </View>
+      <TextInput
+        style={styles.input}
+        placeholder='Search for a Specific Breed'
+        onChangeText={setSearch}
+        value={search}
+      />
       <FlatList
         style={styles.list}
-        data={dataToShow.filter(item => item.breed.toLowerCase().includes(search.toLowerCase()))}
+        data={cats.filter(item => item.breed.toLowerCase().includes(search.toLowerCase()))}
         renderItem={({ item, index }) => {
           return (
             <Cell
@@ -44,6 +36,64 @@ function HomeScreen() {
   );
 }
 
+function DogsScreen() {
+  const navigation = useNavigation();
+  const [search, setSearch] = React.useState('');
+
+  return (
+    <View style={styles.container}>
+      <TextInput
+        style={styles.input}
+        placeholder='Search for a Specific Breed'
+        onChangeText={setSearch}
+        value={search}
+      />
+      <FlatList
+        style={styles.list}
+        data={dogs.filter(item => item.breed.toLowerCase().includes(search.toLowerCase()))}
+        renderItem={({ item, index }) => {
+          return (
+            <Cell
+              title={item.breed}
+              onPress={() => navigation.navigate('Details', { item })}
+            />
+          );
+        }}
+        keyExtractor={(item) => item.breed}
+      />
+    </View>
+  );
+}
+
+const Tab = createBottomTabNavigator();
+
+function HomeScreen() {
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName;
+
+          if (route.name === 'Cats') {
+            iconName = focused ? 'cat' : 'cat';
+          } else if (route.name === 'Dogs') {
+            iconName = focused ? 'dog' : 'dog';
+          }
+
+          return <Icon name={iconName} size={size} color={color} />;
+        },
+      })}
+      tabBarOptions={{
+        activeTintColor: 'tomato',
+        inactiveTintColor: 'gray',
+      }}
+    >
+      <Tab.Screen name="Cats" component={CatsScreen} />
+      <Tab.Screen name="Dogs" component={DogsScreen} />
+    </Tab.Navigator>
+  );
+}
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -52,33 +102,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     backgroundColor: '#f1f1f1',
   },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
   input: {
-    flex: 1,
     fontSize: 18,
     paddingVertical: 10,
     paddingHorizontal: 15,
     borderWidth: 1,
     borderRadius: 5,
-    marginRight: 10,
+    marginBottom: 10,
+    width: '100%',
   },
   list: {
     flex: 1,
     width: '100%',
-  },
-  button: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-  },
-  buttonText: {
-    color: 'black',
-    fontSize: 18,
-    fontWeight: 'bold',
   },
 });
 
